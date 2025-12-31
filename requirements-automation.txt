@@ -1,0 +1,18 @@
+# Requirements for OracleXBT Automation System
+# Hourly tweeting + real-time reply monitoring
+
+# Core dependencies (also needed for basic agent)
+anthropic>=0.18.0
+openai>=1.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Twitter/X integration
+tweepy>=4.14.0
+
+# Scheduling and automation
+schedule>=1.2.0
+APScheduler>=3.10.0
+
+# Optional but recommended
+colorama>=0.4.6  # Colored terminal output
