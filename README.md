@@ -1,3 +1,9 @@
+<div align="center">
+  <img src="assets/banner.png" alt="OracleXBT Banner" width="100%">
+</div>
+
+<br>
+
 # OracleXBT
 
 AI-powered prediction market intelligence platform with cross-chain trading capabilities.
