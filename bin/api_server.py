@@ -11,8 +11,13 @@ import random
 from datetime import datetime, timedelta
 from collections import deque
 import json
+import os
 
-app = Flask(__name__, static_folder='website')
+# Get the parent directory (project root)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+WEBSITE_DIR = os.path.join(BASE_DIR, 'website')
+
+app = Flask(__name__, static_folder=WEBSITE_DIR)
 CORS(app)
 
 # Global trade storage
@@ -87,7 +92,7 @@ def trade_generator():
 @app.route('/')
 def index():
     """Serve the main website"""
-    return send_from_directory('website', 'index.html')
+    return send_from_directory(WEBSITE_DIR, 'index.html')
 
 @app.route('/api/trades')
 def get_trades():
@@ -106,7 +111,7 @@ def get_stats():
 @app.route('/<path:path>')
 def serve_static(path):
     """Serve static files"""
-    return send_from_directory('website', path)
+    return send_from_directory(WEBSITE_DIR, path)
 
 if __name__ == '__main__':
     # Start trade generator in background
