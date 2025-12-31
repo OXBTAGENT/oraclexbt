@@ -5,7 +5,7 @@
 Run the setup script to install the persistent service:
 
 ```bash
-cd /Users/zach/Downloads/oraclyst-python-sdk-main
+cd ~/oraclexbt
 chmod +x setup_persistent.sh
 ./setup_persistent.sh
 ```
@@ -46,13 +46,13 @@ launchctl load ~/Library/LaunchAgents/com.oraclexbt.agent.plist
 ### View Logs
 ```bash
 # Runtime log (start/stop/restart events)
-tail -f /Users/zach/Downloads/oraclyst-python-sdk-main/oracle_runtime.log
+tail -f ~/oraclexbt/oracle_runtime.log
 
 # Agent output
-tail -f /Users/zach/Downloads/oraclyst-python-sdk-main/oracle_stdout.log
+tail -f ~/oraclexbt/oracle_stdout.log
 
 # Errors
-tail -f /Users/zach/Downloads/oraclyst-python-sdk-main/oracle_stderr.log
+tail -f ~/oraclexbt/oracle_stderr.log
 ```
 
 ## After Code Updates

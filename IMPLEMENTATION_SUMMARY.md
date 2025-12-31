@@ -68,7 +68,7 @@ Your OracleXBT agent now has a complete automation system that:
 ### Simplest Way - Just Run It!
 
 ```bash
-cd /Users/zach/Downloads/oraclyst-python-sdk-main
+cd ~/oraclexbt
 ./start_automation.sh
 ```
 
