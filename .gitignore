@@ -2,3 +2,13 @@
 
 # Website
 website/
+
+# Root level files
+/*.py
+/*.log
+/*.sh
+/*.plist
+/*.toml
+/*.json
+/*.md
+/=*
