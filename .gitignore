@@ -1,14 +1,28 @@
+# Environment
 .env
+
+# Logs
+*.log
+oracle_*.log
 
 # Website
 website/
 
-# Root level files
-/*.py
-/*.log
-/*.sh
-/*.plist
-/*.toml
-/*.json
-/*.md
-/=*
+# Temporary files
+*.pyc
+__pycache__/
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Training results
+training_results_*.json
+
+# Dependency files starting with =
+=*
