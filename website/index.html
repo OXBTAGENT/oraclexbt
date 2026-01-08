@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORACLE XBT | SENTIENT PREDICTION MARKET ANALYST</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #0aff0a;
+            --bg-dark: #050510;
+            --card-bg: rgba(20, 20, 35, 0.7);
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: #e0e0e0;
+            font-family: 'Space Grotesk', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 243, 255, 0.1) 0%, transparent 20%);
+            overflow-x: hidden;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glass-panel {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .neon-border {
+            position: relative;
+        }
+        .neon-border::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: inherit;
+            border: 1px solid transparent;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple)) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .pulse-dot {
+            box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.7);
+            animation: pulse-blue 2s infinite;
+        }
+        
+        @keyframes pulse-blue {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 243, 255, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 243, 255, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 243, 255, 0); }
+        }
+
+        .glitch-text:hover {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+            color: var(--neon-blue);
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a15; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-blue); }
+    </style>
+</head>
+<body class="min-h-screen text-gray-300">
+
+    <!-- Top Navigation / Header -->
+    <nav class="fixed top-0 w-full z-50 glass-panel border-b-0 border-b-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <div class="w-3 h-3 bg-cyan-400 rounded-full pulse-dot"></div>
+                    </div>
+                    <span class="text-xl font-bold tracking-widest text-white font-mono">ORACLE<span class="text-cyan-400">XBT</span></span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8 font-mono text-sm">
+                        <a href="#" class="text-white hover:text-cyan-400 px-3 py-2 rounded-md transition-colors">DASHBOARD</a>
+                        <a href="#live-feed" class="text-gray-400 hover:text-cyan-400 px-3 py-2 rounded-md transition-colors">LIVE FEED</a>
+                        <a href="#" class="text-gray-400 hover:text-cyan-400 px-3 py-2 rounded-md transition-colors">ARBITRAGE</a>
+                        <a href="#" class="text-gray-400 hover:text-cyan-400 px-3 py-2 rounded-md transition-colors">SETTINGS</a>
+                    </div>
+                </div>
+                <!-- Status Indicator -->
+                <div class="flex items-center gap-2 border border-gray-700 rounded-full px-3 py-1 bg-black/40">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="text-xs font-mono text-green-400">SYSTEM ONLINE</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+        
+        <!-- Hero / Oracle Mind Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Left: Oracle Mind Stream -->
+            <div id="live-feed" class="lg:col-span-2 glass-panel rounded-xl p-6 relative overflow-hidden neon-border group flex flex-col">
+                <canvas id="neural-canvas" class="absolute inset-0 w-full h-full opacity-30 pointer-events-none"></canvas>
+                <div class="absolute top-0 right-0 p-4 opacity-10 z-0">
+                    <i data-lucide="brain-circuit" class="w-32 h-32 text-cyan-400"></i>
+                </div>
+                
+                <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2 relative z-10">
+                    <span class="relative flex h-3 w-3">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+                    </span>
+                    ORACLE NEURAL FEED
+                </h2>
+                
+                <div id="thought-stream" class="space-y-3 font-mono text-sm h-[250px] overflow-y-auto pr-2 relative z-10 flex-1 custom-scrollbar">
+                    <!-- Thoughts injected via JS -->
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-800 flex justify-between items-center relative z-10">
+                    <span class="text-xs text-cyan-500/80 uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="activity" class="w-4 h-4"></i>
+                        NEURAL ACTIVITY: HIGH
+                    </span>
+                    <button id="refresh-thoughts" class="text-xs bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded transition-colors border border-cyan-500/30">
+                        FORCE SYNAPSE REFRESH
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right: Arbitrage Opportunity Pulse -->
+            <div class="glass-panel rounded-xl p-6 neon-border flex flex-col justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5 text-yellow-400"></i>
+                        ACTIVE ARBITRAGE
+                    </h2>
+                    <p class="text-xs text-gray-500 mb-4">Live opportunities detected across exchanges</p>
+                </div>
+
+                <div id="arbitrage-ticker" class="space-y-3">
+                    <!-- Arb items injected via JS -->
+                    <div class="text-center text-gray-500 text-sm py-4">Scanning markets...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Comparison Grid -->
+        <div class="glass-panel p-6 rounded-xl border border-gray-800/50">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                    <i data-lucide="bar-chart-2" class="w-6 h-6 text-cyan-400"></i>
+                    CROSS-MARKET INTEL FEED
+                </h3>
+                <div class="flex gap-2">
+                    <span class="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-1 rounded border border-cyan-500/20">LIVE ODDS</span>
+                    <span class="text-[10px] bg-purple-500/10 text-purple-400 px-2 py-1 rounded border border-purple-500/20">SENTIMENT</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Polymarket Column -->
+                <div class="space-y-4 relative group">
+                    <div class="absolute -inset-2 bg-gradient-to-b from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl -z-10"></div>
+                    <div class="flex items-center justify-between mb-4 border-b border-blue-500/30 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-400"><i data-lucide="globe" class="w-4 h-4"></i></span>
+                            <span class="font-bold text-gray-100 tracking-wider text-sm">POLYMARKET</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-blue-400 animate-pulse">● LIVE</span>
+                    </div>
+                    <div id="polymarket-feed" class="space-y-4 h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Cards injected JS -->
+                    </div>
+                </div>
+
+                <!-- Kalshi Column -->
+                <div class="space-y-4 relative group">
+                    <div class="absolute -inset-2 bg-gradient-to-b from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl -z-10"></div>
+                    <div class="flex items-center justify-between mb-4 border-b border-green-500/30 pb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-green-400"><i data-lucide="shield-check" class="w-4 h-4"></i></span>
+                            <span class="font-bold text-gray-100 tracking-wider text-sm">KALSHI</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-green-400 animate-pulse">● LIVE</span>
+                    </div>
+                    <div id="kalshi-feed" class="space-y-4 h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Cards injected JS -->
+                    </div>
+                </div>
+
+                <!-- Manifold/Local Column -->
+                <div class="space-y-4 relative group">
+                    <div class="absolute -inset-2 bg-gradient-to-b from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl -z-10"></div>
+                    <div class="flex items-center justify-between mb-4 border-b border-purple-500/30 pb-2">
+                        <div class="flex items-center gap-2">
+                           <span class="text-purple-400"><i data-lucide="users" class="w-4 h-4"></i></span>
+                            <span class="font-bold text-gray-100 tracking-wider text-sm">MANIFOLD</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-purple-400 animate-pulse">● LIVE</span>
+                    </div>
+                    <div id="manifold-feed" class="space-y-4 h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        <!-- Cards injected JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Agent Showcase Section -->
+        <div class="mt-16 glass-panel p-8 md:p-12 rounded-xl border border-gray-800/50 relative overflow-hidden">
+            <!-- Background Glow -->
+            <div class="absolute inset-0 bg-gradient-to-r from-cyan-900/10 via-transparent to-purple-900/10 z-0"></div>
+            <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+            
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                
+                <!-- Text Content -->
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-900/30 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-6">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                        </span>
+                        COMING SOON
+                    </div>
+                    
+                    <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">
+                        DEPLOY YOUR OWN <br />
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">SENTIENT TRADER</span>
+                    </h2>
+                    
+                    <p class="text-gray-400 mb-8 max-w-lg leading-relaxed text-sm md:text-base border-l-2 border-cyan-500/30 pl-4">
+                        The same institutional-grade infrastructure powering the OracleXBT feed will soon be available for personal deployment. Automate your strategy across Polymarket, Kalshi, and Manifold with sub-second execution.
+                    </p>
+                    
+                    <ul class="space-y-4 mb-10">
+                        <li class="flex items-center gap-3 text-gray-300">
+                            <div class="p-1 rounded bg-cyan-500/10"><i data-lucide="zap" class="w-4 h-4 text-cyan-400"></i></div>
+                            <span class="text-sm font-medium">Autonomous Arbitrage Execution</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300">
+                            <div class="p-1 rounded bg-purple-500/10"><i data-lucide="brain" class="w-4 h-4 text-purple-400"></i></div>
+                            <span class="text-sm font-medium">LLM-Powered Sentiment Analysis</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-gray-300">
+                            <div class="p-1 rounded bg-green-500/10"><i data-lucide="shield" class="w-4 h-4 text-green-400"></i></div>
+                            <span class="text-sm font-medium">Risk-Adjusted Position Sizing</span>
+                        </li>
+                    </ul>
+
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="/docs" target="_blank" class="px-8 py-3 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/50 hover:border-cyan-400 text-cyan-400 rounded transition-all font-mono text-sm font-bold flex items-center gap-2 group">
+                            <i data-lucide="book-open" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                            READ AGENT DOCUMENTATION
+                        </a>
+                    </div>
+                    <p class="mt-4 text-[10px] text-gray-500 font-mono tracking-widest">SYSTEM STATUS: <span class="text-green-400">OPERATIONAL</span> v2.4.0-alpha</p>
+                </div>
+
+                <!-- Code Terminal Visual -->
+                <div class="relative group">
+                    <!-- Glow behind -->
+                    <div class="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                    
+                    <div class="relative rounded-lg bg-[#0a0c10] border border-gray-800 p-6 font-mono text-xs shadow-2xl">
+                        <div class="flex items-center gap-2 mb-6 border-b border-gray-800 pb-4">
+                            <div class="flex gap-1.5">
+                                <div class="w-3 h-3 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500/20"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500/20"></div>
+                            </div>
+                            <span class="ml-auto text-gray-600 flex items-center gap-1">
+                                <i data-lucide="terminal" class="w-3 h-3"></i> agent.py
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-1.5 text-gray-400 selection:bg-cyan-500/30">
+                            <div class="flex">
+                                <span class="text-purple-400 mr-2">from</span> oraclyst <span class="text-purple-400 mx-2">import</span> Agent, Strategy
+                            </div>
+                            <div class="h-2"></div>
+                            <div class="text-gray-600 italic"># Initialize your autonomous trader</div>
+                            <div>
+                                <span class="text-blue-400">agent</span> = Agent(
+                            </div>
+                            <div class="pl-4">
+                                risk_level=<span class="text-green-400">"aggressive"</span>,
+                            </div>
+                            <div class="pl-4">
+                                capital_allocation=<span class="text-orange-400">0.95</span>,
+                            </div>
+                            <div class="pl-4">
+                                platforms=[<span class="text-green-400">"polymarket"</span>, <span class="text-green-400">"kalshi"</span>],
+                            </div>
+                            <div class="pl-4">
+                                max_drawdown=<span class="text-orange-400">0.15</span>
+                            </div>
+                            <div>)</div>
+                            <div class="h-2"></div>
+                            <div class="text-gray-600 italic"># Start the event loop</div>
+                            <div class="flex items-center">
+                                <span class="text-blue-400 mr-2">await</span> agent.deploy(mode=<span class="text-green-400">"live_trading"</span>)
+                            </div>
+                            <div class="mt-4 p-3 bg-black/50 rounded border border-gray-800/50 text-cyan-400">
+                                > SYSTEM INITIALIZED<br/>
+                                > CONNECTED TO POLYMARKET (WS)<br/>
+                                > SCANNING FOR ARBITRAGE...<span class="animate-pulse">_</span>
+                            </div>
+                        </div>
+
+                        <!-- Overlay Box -->
+                        <div class="absolute -right-6 -bottom-6 bg-[#1a1f2e] border border-cyan-500/30 p-4 rounded-lg shadow-2xl backdrop-blur-md transform transition-transform group-hover:scale-105 duration-300">
+                            <div class="flex items-center justify-between mb-2 gap-8">
+                                <div class="text-[10px] text-gray-400 uppercase tracking-wider">Net Profit (24h)</div>
+                                <i data-lucide="trending-up" class="w-4 h-4 text-green-400"></i>
+                            </div>
+                            <div class="text-2xl font-bold text-white font-mono flex items-baseline gap-1">
+                                +$1,240.50
+                                <span class="text-xs text-green-400 font-normal">+12.4%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Init Icons
+        lucide.createIcons();
+
+        // --- Data Fetching Logic ---
+
+        async function fetchThoughts() {
+            try {
+                const response = await fetch('/api/thoughts');
+                const data = await response.json();
+                if (data.success) {
+                    renderThoughts(data.data);
+                }
+            } catch (e) {
+                console.error("Error fetching thoughts", e);
+            }
+        }
+
+        async function fetchMarkets() {
+            try {
+                // Determine limits per platform if possible, or just fetch all and filter client side for now
+                // In a real app we'd ask for specific platform data
+                const response = await fetch('/api/markets?limit=50');
+                const data = await response.json();
+                
+                if (data.success) {
+                    distributeMarkets(data.data);
+                }
+            } catch (e) {
+                console.error("Error fetching markets", e);
+            }
+        }
+
+        async function fetchArbitrage() {
+            try {
+                const response = await fetch('/api/arbitrage?limit=3');
+                const data = await response.json();
+                if (data.success) {
+                    renderArbitrage(data.data);
+                }
+            } catch (e) {
+                console.error("Error fetch arb", e);
+            }
+        }
+
+        // --- Rendering Logic ---
+
+        function renderThoughts(thoughts) {
+            const container = document.getElementById('thought-stream');
+            container.innerHTML = thoughts.map((t, i) => {
+                const isNew = i === 0;
+                const opacity = Math.max(0.4, 1 - (i * 0.15));
+                const highlight = isNew ? 'bg-cyan-500/10 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.1)]' : 'bg-black/20 border-gray-800';
+                
+                return `
+                <div class="p-3 rounded border-l-2 mb-2 transition-all duration-500 ${highlight}" style="opacity: ${opacity}">
+                    <div class="flex items-center gap-2 mb-1.5 font-mono text-[10px] tracking-wider text-gray-500">
+                        <span class="text-cyan-600">[${t.timestamp}]</span>
+                        <span class="text-gray-600">>></span>
+                        <span class="${getSentimentColor(t.sentiment)} font-bold bg-black/40 px-1 rounded">${t.topic}</span>
+                        ${isNew ? '<span class="ml-auto text-cyan-400 animate-pulse">● PROCESSING</span>' : ''}
+                    </div>
+                    <p class="text-gray-300 text-xs font-mono leading-relaxed pl-2 border-l border-gray-800/50">
+                        <span class="text-cyan-500/50 mr-2">></span>${t.content}
+                    </p>
+                </div>
+            `}).join('');
+        }
+
+        function getSentimentColor(sentiment) {
+            if (sentiment === 'bullish') return 'text-green-400';
+            if (sentiment === 'bearish') return 'text-red-400';
+            return 'text-blue-400';
+        }
+
+        // --- Holographic Neural Sphere Animation ---
+        const canvas = document.getElementById('neural-canvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let nodes = [];
+            const numNodes = 60;
+            const radius = 100;
+            let rotation = 0;
+
+            function resize() {
+                width = canvas.width = canvas.parentElement.offsetWidth;
+                height = canvas.height = canvas.parentElement.offsetHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Create nodes on a sphere
+            for (let i = 0; i < numNodes; i++) {
+                const theta = Math.acos(-1 + (2 * i) / numNodes);
+                const phi = Math.sqrt(numNodes * Math.PI) * theta;
+                nodes.push({
+                    x: radius * Math.sin(theta) * Math.cos(phi),
+                    y: radius * Math.sin(theta) * Math.sin(phi),
+                    z: radius * Math.cos(theta)
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                const cx = width / 2;
+                const cy = height / 2;
+                
+                // Rotation
+                rotation += 0.005;
+                const rx = rotation;
+                const ry = rotation * 0.8;
+
+                // Project and Draw
+                nodes.forEach((node, i) => {
+                    // Rotate
+                    let x = node.x * Math.cos(ry) - node.z * Math.sin(ry);
+                    let z = node.z * Math.cos(ry) + node.x * Math.sin(ry);
+                    let y = node.y * Math.cos(rx) - z * Math.sin(rx);
+                    z = z * Math.cos(rx) + node.y * Math.sin(rx);
+
+                    // Perspective
+                    const scale = 250 / (250 + z);
+                    const px = x * scale + cx;
+                    const py = y * scale + cy;
+
+                    // Draw connections
+                    nodes.forEach((other, j) => {
+                        if (i >= j) return;
+                        const dx = node.x - other.x;
+                        const dy = node.y - other.y;
+                        const dz = node.z - other.z;
+                        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                        
+                        if (dist < 50) {
+                            // Rotate other
+                            let ox = other.x * Math.cos(ry) - other.z * Math.sin(ry);
+                            let oz = other.z * Math.cos(ry) + other.x * Math.sin(ry);
+                            let oy = other.y * Math.cos(rx) - oz * Math.sin(rx);
+                            oz = oz * Math.cos(rx) + other.y * Math.sin(rx);
+
+                            const oScale = 250 / (250 + oz);
+                            const opx = ox * oScale + cx;
+                            const opy = oy * oScale + cy;
+
+                            ctx.beginPath();
+                            ctx.moveTo(px, py);
+                            ctx.lineTo(opx, opy);
+                            // Depth fading
+                            const alpha = (1 - dist/50) * Math.max(0, scale * oScale - 0.2); 
+                            ctx.strokeStyle = `rgba(0, 243, 255, ${alpha * 0.5})`;
+                            ctx.lineWidth = 1;
+                            ctx.stroke();
+                        }
+                    });
+
+                    // Draw Node
+                    const alpha = Math.max(0, (z + radius) / (2 * radius));
+                    ctx.beginPath();
+                    ctx.arc(px, py, 2 * scale, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(0, 243, 255, ${alpha})`;
+                    ctx.fill();
+                    
+                    // Glow effect for "active" nodes
+                    if (Math.random() > 0.98) {
+                        ctx.beginPath();
+                        ctx.arc(px, py, 8 * scale, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(0, 243, 255, ${alpha * 0.3})`;
+                        ctx.fill();
+                    }
+                });
+
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function distributeMarkets(markets) {
+            const polyContainer = document.getElementById('polymarket-feed');
+            const kalshiContainer = document.getElementById('kalshi-feed');
+            const manifoldContainer = document.getElementById('manifold-feed');
+
+            // Clear current
+            polyContainer.innerHTML = '';
+            kalshiContainer.innerHTML = '';
+            manifoldContainer.innerHTML = '';
+
+            markets.forEach(m => {
+                const card = createMarketCard(m);
+                if (m.platform === 'Polymarket') polyContainer.innerHTML += card;
+                else if (m.platform === 'Kalshi') kalshiContainer.innerHTML += card;
+                else manifoldContainer.innerHTML += card; 
+            });
+        }
+
+        function createMarketCard(m) {
+            const yesPercent = Math.round(m.yes_price * 100);
+            const noPercent = 100 - yesPercent;
+            
+            // Platform specific accent colors
+            let accentColor = 'blue';
+            if (m.platform === 'Kalshi') accentColor = 'green';
+            if (m.platform === 'Manifold') accentColor = 'purple';
+
+            return `
+                <div class="glass-panel p-3 rounded border border-gray-800 hover:border-${accentColor}-500/50 transition-all duration-300 group cursor-pointer relative overflow-hidden">
+                    <!-- Hover Glow -->
+                    <div class="absolute inset-0 bg-${accentColor}-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-xs font-bold text-gray-300 group-hover:text-white transition-colors line-clamp-2 w-3/4">
+                                ${m.title}
+                            </h4>
+                            <span class="text-[10px] font-mono text-${accentColor}-400 bg-${accentColor}-900/20 px-1.5 py-0.5 rounded border border-${accentColor}-500/20">
+                                ${yesPercent}%
+                            </span>
+                        </div>
+                        
+                        <!-- Prediction Bar -->
+                        <div class="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden flex mb-2">
+                            <div class="h-full bg-${accentColor}-500 shadow-[0_0_10px_rgba(var(--${accentColor}-rgb),0.5)]" style="width: ${yesPercent}%"></div>
+                        </div>
+
+                        <div class="flex justify-between items-center text-[10px] text-gray-500 font-mono">
+                            <span class="flex items-center gap-1 group-hover:text-gray-400 transition-colors">
+                                <i data-lucide="activity" class="w-3 h-3"></i> $${formatVolume(m.volume)}
+                            </span>
+                            <span class="text-gray-600 group-hover:text-${accentColor}-400 transition-colors uppercase tracking-wider">${m.category}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderArbitrage(opportunities) {
+            const container = document.getElementById('arbitrage-ticker');
+            if (opportunities.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 text-xs mt-10">No clear arbitrage detected</div>`;
+                return;
+            }
+            container.innerHTML = opportunities.map(o => `
+                <div class="bg-gradient-to-r from-yellow-900/10 to-transparent border border-yellow-500/20 p-3 rounded hover:border-yellow-500/40 transition-colors">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-xs font-bold text-yellow-500">SPREAD: ${o.spread.toFixed(2)}%</span>
+                        <i data-lucide="arrow-right-left" class="w-3 h-3 text-yellow-500/50"></i>
+                    </div>
+                    <div class="text-xs text-gray-300 font-medium truncate mb-2">${o.event}</div>
+                    <div class="flex justify-between text-[10px] text-gray-400 font-mono">
+                        <span>${o.platform1}: $${o.price1.toFixed(2)}</span>
+                        <span>${o.platform2}: $${o.price2.toFixed(2)}</span>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons(); // Re-init icons for new content
+        }
+
+        function formatVolume(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        // --- Init ---
+        fetchThoughts();
+        fetchMarkets();
+        fetchArbitrage();
+
+        // Refresh cycles
+        setInterval(fetchThoughts, 30000); // Thoughts every 30s
+        setInterval(fetchMarkets, 10000); // Prices every 10s
+        setInterval(fetchArbitrage, 15000); // Arb every 15s
+
+        // Manual refresh button
+        document.getElementById('refresh-thoughts').addEventListener('click', () => {
+            const btn = document.getElementById('refresh-thoughts');
+            btn.innerHTML = 'REFRESHING...';
+            fetchThoughts().then(() => btn.innerHTML = 'REFRESH NEURAL NET');
+        });
+
+    </script>
+</body>
+</html>

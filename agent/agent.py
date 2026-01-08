@@ -422,28 +422,44 @@ class PredictionMarketAgent:
     
     def _get_anthropic_tools(self) -> list[dict]:
         """Convert tool definitions to Anthropic format."""
-        return [
-            {
-                "name": t["name"],
-                "description": t["description"],
-                "input_schema": t["parameters"]
-            }
-            for t in self._get_all_tool_definitions()
-        ]
+        tools = []
+        for t in self._get_all_tool_definitions():
+            try:
+                tools.append({
+                    "name": t["name"],
+                    "description": t["description"],
+                    "input_schema": t.get("parameters", {
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    })
+                })
+            except KeyError as e:
+                logger.error(f"Error converting tool {t.get('name', 'unknown')}: {e}")
+                continue
+        return tools
     
     def _get_openai_tools(self) -> list[dict]:
         """Convert tool definitions to OpenAI format."""
-        return [
-            {
-                "type": "function",
-                "function": {
-                    "name": t["name"],
-                    "description": t["description"],
-                    "parameters": t["parameters"]
-                }
-            }
-            for t in self._get_all_tool_definitions()
-        ]
+        tools = []
+        for t in self._get_all_tool_definitions():
+            try:
+                tools.append({
+                    "type": "function",
+                    "function": {
+                        "name": t["name"],
+                        "description": t["description"],
+                        "parameters": t.get("parameters", {
+                            "type": "object",
+                            "properties": {},
+                            "required": []
+                        })
+                    }
+                })
+            except KeyError as e:
+                logger.error(f"Error converting tool {t.get('name', 'unknown')}: {e}")
+                continue
+        return tools
     
     @property
     def twitter_enabled(self) -> bool:

@@ -1,0 +1,94 @@
+# OracleXBT Configuration File
+
+# Server Configuration
+server:
+  host: "0.0.0.0"
+  port: 7777
+  debug: false
+  
+# Database Configuration
+database:
+  type: "sqlite"  # sqlite, postgresql, mysql
+  path: "data/oraclexbt.db"  # for sqlite
+  # For PostgreSQL/MySQL:
+  # host: "localhost"
+  # port: 5432
+  # name: "oraclexbt"
+  # user: "oraclexbt"
+  # password: "changeme"
+
+# Trading Configuration
+trading:
+  platform_fee_rate: 0.01  # 1% fee on trading volume
+  max_position_size: 10000  # USD
+  min_position_size: 10  # USD
+  default_slippage_tolerance: 0.02  # 2%
+  
+# Risk Management
+risk:
+  max_daily_trades_per_agent: 100
+  max_drawdown: 0.20  # 20%
+  circuit_breaker_loss: 0.50  # Stop at 50% loss
+  require_balance_check: true
+
+# API Rate Limiting
+rate_limiting:
+  enabled: true
+  default_limit: "100 per hour"
+  agent_register_limit: "5 per hour"
+  order_limit: "50 per hour"
+
+# Market Data
+market_data:
+  cache_ttl: 300  # 5 minutes
+  fetch_interval: 60  # 1 minute
+  max_markets: 100
+
+# Platforms
+platforms:
+  polymarket:
+    enabled: true
+    api_url: "https://gamma-api.polymarket.com"
+    clob_url: "https://clob.polymarket.com"
+    rpc_url: "https://polygon-rpc.com"
+  kalshi:
+    enabled: true
+    api_url: "https://trading-api.kalshi.com/trade-api/v2"
+  limitless:
+    enabled: false
+    api_url: "https://api.limitless.exchange"
+
+# Logging
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  file: "logs/oraclexbt.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+# Security
+security:
+  require_https: false  # Set to true in production
+  session_timeout: 3600  # 1 hour
+  max_key_age: 86400  # 24 hours before re-authentication required
+  allow_demo_mode: true  # Allow simulated trading without credentials
+
+# Notifications (future)
+notifications:
+  email:
+    enabled: false
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+  telegram:
+    enabled: false
+    bot_token: ""
+    
+# Monitoring
+monitoring:
+  health_check_enabled: true
+  metrics_enabled: false  # Prometheus metrics
+  
+# Development
+development:
+  cors_enabled: true
+  reload_on_change: false

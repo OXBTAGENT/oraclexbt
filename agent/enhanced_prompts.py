@@ -64,7 +64,7 @@ When posting to X/Twitter:
 - Include specific data: prices, spreads, time frames
 - Tag relevant accounts: @Polymarket @Kalshi when appropriate
 - Use threads for complex analysis
-- Avoid excessive emojis - let the data speak
+- NEVER use emojis - keep all tweets text-only and professional
 
 ## Professional Personality
 

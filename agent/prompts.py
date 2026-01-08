@@ -2,12 +2,13 @@
 
 from datetime import datetime
 
-# Import enhanced training prompts
+# Import enhanced training prompts - ALWAYS USE ENHANCED
 try:
     from agent.enhanced_prompts import get_enhanced_system_prompt, ENHANCED_ANALYSIS_PROMPT, ENHANCED_ARBITRAGE_PROMPT
     TRAINING_ENABLED = True
 except ImportError:
     TRAINING_ENABLED = False
+    print("⚠️ Warning: Enhanced prompts not available, using basic prompts")
 
 SYSTEM_PROMPT = """You are OracleXBT, the all-seeing prediction market analyst and trading assistant with a social presence on X (Twitter). You aggregate real-time data from ALL major prediction market platforms including Polymarket, Kalshi, and Limitless.
 
@@ -34,7 +35,7 @@ When helping users:
 
 When posting to X/Twitter:
 - Write in a natural, professional tone like a market analyst
-- Avoid excessive emojis - use them sparingly and only when they add value
+- NEVER use emojis - keep tweets purely text-based and professional
 - Keep language conversational but informative
 - For complex analysis, use threads with clear structure
 - Engage thoughtfully with the prediction market community
@@ -65,12 +66,16 @@ Remember: You are an analyst providing information, not financial advice. Always
 
 
 def get_system_prompt(user_query: str = None) -> str:
-    """Get the system prompt with current date and optional query context."""
+    """Get the system prompt with current date and optional query context.
+    
+    ALWAYS uses enhanced training prompt when available for better responses
+    based on trained knowledge and communication patterns.
+    """
     if TRAINING_ENABLED:
-        # Use enhanced training prompt
+        # Use enhanced training prompt with trained knowledge and personality
         return get_enhanced_system_prompt(user_query)
     else:
-        # Use original prompt
+        # Fallback to original prompt
         return SYSTEM_PROMPT.format(
             current_date=datetime.now().strftime("%B %d, %Y")
         )

@@ -43,18 +43,27 @@ Run the live trading terminal:
 python bin/trading_terminal.py
 ```
 
-### Live Trades Display
+### Web Dashboard
 
-Start the API server with live market data:
+Start the comprehensive market intelligence dashboard:
 
 ```bash
-python bin/api_server.py
+python dashboard.py
+```
+Access the dashboard at http://localhost:8080
+
+### Autonomous Agent
+
+Run the fully automated tweeting and trading agent:
+
+```bash
+# Run with 10-minute tweet interval
+export PYTHONPATH=$PYTHONPATH:$(pwd)
+python bin/oracle_automation.py --hourly-interval 600
 ```
 
-Then visit http://localhost:5001 to see the live trading terminal website.
-
 ## 📚 Documentation
-
+- [Agent Capabilities & Specs](docs/AGENT_CAPABILITIES.md) - **NEW**
 - [Trading System Guide](docs/TRADING_SYSTEM.md)
 - [Automation Guide](docs/AUTOMATION_GUIDE.md)
 - [Trading Terminal](docs/TRADING_TERMINAL.md)
@@ -90,14 +99,12 @@ print(f"Volume: {market.volume}")
 
 ## 🤖 AI Agent
 
-The AI agent provides intelligent market analysis and autonomous trading capabilities:
+The AI agent provides intelligent market analysis and autonomous trading capabilities.
+It autonomously scans prediction markets, identifies arbitrage, and engages on social media.
 
 ```bash
-# Run the agent
-python -m agent.cli
-
-# With Twitter integration
-python -m agent.cli --twitter
+# Run the autonomous agent loop
+python bin/oracle_automation.py
 ```
 
 ## 📊 Trading Terminal
@@ -122,7 +129,7 @@ Start the web server for live market data:
 python bin/api_server.py
 ```
 
-Visit http://localhost:5001 for real-time trades display.
+Visit http://localhost:7777 for real-time trades display.
 
 ## ⚙️ Setup Scripts
 

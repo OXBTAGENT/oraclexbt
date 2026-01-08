@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OracleXBT - Autonomous Prediction Market Trading Agent</title>
+    <meta name="description" content="AI-powered autonomous agent for prediction market trading. Advanced arbitrage detection, real-time analysis, and automated execution across Polymarket, Kalshi, and Limitless.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        :root {
+            --bg-primary: #0f1117;
+            --bg-secondary: #1a1d29;
+            --bg-tertiary: #252937;
+            --bg-elevated: #2d3142;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #b4b9c9;
+            --text-tertiary: #6b7280;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #6366f1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading Animations */
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 var(--success);
+            }
+            50% {
+                opacity: 0.7;
+                box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.3);
+            }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(15, 17, 23, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 72px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--gradient-brand);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: var(--gradient-brand);
+            color: white;
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 20px -10px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 140px 2rem 80px;
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+        }
+
+        .gradient-text {
+            background: var(--gradient-brand);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-buttons .btn-primary {
+            padding: 1rem 2rem;
+            font-size: 1.05rem;
+        }
+
+        .hero-buttons .btn-secondary {
+            padding: 1rem 2rem;
+            font-size: 1.05rem;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 60px auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--gradient-brand);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* Section Styling */
+        .section {
+            padding: 80px 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px -15px rgba(59, 130, 246, 0.2);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--accent-primary);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* Market Cards */
+        .markets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .market-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .market-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .market-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .platform-badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .platform-polymarket {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+
+        .market-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .market-outcomes {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .outcome {
+            background: var(--bg-tertiary);
+            padding: 0.875rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .outcome-label {
+            font-size: 0.8rem;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .outcome-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .outcome-yes .outcome-price {
+            color: var(--success);
+        }
+
+        .outcome-no .outcome-price {
+            color: var(--danger);
+        }
+
+        .market-volume {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+        }
+
+        /* Trading Terminal */
+        .trading-section {
+            background: var(--bg-secondary);
+            padding: 80px 2rem;
+        }
+
+        .trading-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .terminal-panel {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .panel-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .side-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .side-btn {
+            padding: 0.875rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .side-btn.active.yes {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .side-btn.active.no {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--gradient-brand);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 20px -10px rgba(59, 130, 246, 0.4);
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        /* Market Browser */
+        .market-search {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 0.75rem center;
+            background-size: 1.25rem;
+        }
+
+        .markets-list {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .markets-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .markets-list::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+
+        .markets-list::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .market-list-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .market-list-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateX(4px);
+        }
+
+        .market-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .market-id {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .market-item-title {
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .market-item-prices {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .price-yes {
+            color: var(--success);
+        }
+
+        .price-no {
+            color: var(--danger);
+        }
+
+        /* Live Terminal */
+        .terminal-table-container {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .terminal-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .terminal-table thead {
+            background: var(--bg-secondary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .terminal-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .terminal-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .terminal-table tbody tr {
+            transition: background 0.2s;
+        }
+
+        .terminal-table tbody tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .trade-side-yes {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .trade-side-no {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        /* Performance Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .metric-positive {
+            color: var(--success);
+        }
+
+        .metric-negative {
+            color: var(--danger);
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 60px 2rem;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        footer p {
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .trading-container {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Loading State */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s ease-in-out infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* New Bet Animation */
+        @keyframes newBetPulse {
+            0% {
+                background: rgba(59, 130, 246, 0.2);
+                transform: scale(1);
+            }
+            50% {
+                background: rgba(59, 130, 246, 0.3);
+                transform: scale(1.005);
+            }
+            100% {
+                background: transparent;
+                transform: scale(1);
+            }
+        }
+
+        .new-bet-row {
+            animation: newBetPulse 1.5s ease-out;
+        }
+
+        .terminal-table tbody tr.new-bet-row td {
+            border-color: var(--accent-primary);
+        }
+
+        /* Agent Configuration Styles */
+        .agent-section {
+            background: var(--bg-secondary);
+            padding: 80px 2rem;
+        }
+
+        .agent-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .config-panel {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .agent-status-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .agent-status-icon.active {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid var(--success);
+        }
+
+        .agent-status-icon.inactive {
+            background: rgba(107, 114, 128, 0.2);
+            border: 2px solid var(--text-tertiary);
+        }
+
+        .agent-status-info h4 {
+            font-size: 1.125rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .agent-status-info p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .toggle-switch {
+            margin-left: auto;
+            position: relative;
+            width: 60px;
+            height: 32px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-tertiary);
+            transition: .3s;
+            border-radius: 32px;
+            border: 2px solid var(--border-color);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background: var(--gradient-brand);
+            border-color: var(--accent-primary);
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(28px);
+        }
+
+        .api-key-input {
+            position: relative;
+        }
+
+        .api-key-input input {
+            padding-right: 3rem;
+        }
+
+        .toggle-visibility {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 1.125rem;
+        }
+
+        .strategy-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .info-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-box-content {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .activity-feed {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-type {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .activity-type.trade {
+            color: var(--accent-primary);
+        }
+
+        .activity-type.alert {
+            color: var(--warning);
+        }
+
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+        }
+
+        .activity-details {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 1024px) {
+            .agent-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .strategy-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">OracleXBT</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#markets">Markets</a></li>
+                <li><a href="#agent">My Agent</a></li>
+                <li><a href="https://github.com/OXBTAGENT/oraclexbt" target="_blank">GitHub</a></li>
+            </ul>
+            <a href="#agent" class="btn-primary">Setup Agent</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>
+            Autonomous AI Agent<br>
+            for <span class="gradient-text">Prediction Markets</span>
+        </h1>
+        <p>
+            Advanced machine learning algorithms analyze markets, detect arbitrage opportunities, 
+            and execute trades across multiple platforms with precision and speed.
+        </p>
+        <div class="hero-buttons">
+            <a href="#agent" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+                Start Trading Now
+            </a>
+            <a href="https://github.com/OXBTAGENT/oraclexbt" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Documentation
+            </a>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="total-trades-hero">
+                <span style="display: inline-block; width: 60px; height: 32px; background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px;"></span>
+            </div>
+            <div class="stat-label">Total Trades</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="total-volume-hero">
+                <span style="display: inline-block; width: 80px; height: 32px; background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px;"></span>
+            </div>
+            <div class="stat-label">Trading Volume</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Platforms</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" style="color: var(--success);">
+                <span style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                    <span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite;"></span>
+                    24/7
+                </span>
+            </div>
+            <div class="stat-label">Active Monitoring</div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section id="features" class="section">
+        <div class="section-header">
+            <h2 class="section-title">Advanced Trading Features</h2>
+            <p class="section-subtitle">
+                Enterprise-grade tools for professional prediction market trading
+            </p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        <circle cx="9" cy="11" r="1"></circle>
+                        <circle cx="15" cy="11" r="1"></circle>
+                        <path d="M9 15h6"></path>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Autonomous Execution</h3>
+                <p class="feature-description">
+                    AI-powered agent monitors markets 24/7, detecting opportunities and executing trades 
+                    automatically based on your strategy parameters.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Arbitrage Detection</h3>
+                <p class="feature-description">
+                    Real-time scanning across Polymarket, Kalshi, and Limitless to identify and capitalize 
+                    on price discrepancies instantly.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Secure & Non-Custodial</h3>
+                <p class="feature-description">
+                    Your keys, your funds. All trades execute from your wallet with enterprise-grade 
+                    security and full transparency.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="16"></line>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Advanced Analytics</h3>
+                <p class="feature-description">
+                    Comprehensive market analysis with real-time insights, historical data, 
+                    and performance metrics to inform decisions.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6m10-6h-6m-6 0H1"></path>
+                        <path d="m9 9-2.5-2.5M15 9l2.5-2.5M9 15l-2.5 2.5M15 15l2.5 2.5"></path>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Customizable Strategies</h3>
+                <p class="feature-description">
+                    Configure risk parameters, position sizing, and trading rules to match your 
+                    investment strategy and risk tolerance.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Multi-Chain Support</h3>
+                <p class="feature-description">
+                    Seamless trading across Polygon, Ethereum, and Arbitrum with automatic 
+                    best-route selection for optimal execution.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Markets Section -->
+    <section id="markets" class="section">
+        <div class="section-header">
+            <h2 class="section-title" style="display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+                <span class="status-dot" style="width: 12px; height: 12px; background: var(--success);"></span>
+                Live Prediction Markets Bets
+            </h2>
+            <p class="section-subtitle">
+                Real-time bets streaming from Polymarket, Kalshi, and Limitless • <span id="update-timer" style="color: var(--accent-primary);">Updated just now</span>
+            </p>
+        </div>
+        
+        <!-- Live Trading Terminal -->
+        <div class="terminal-table-container">
+            <table class="terminal-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Order ID</th>
+                        <th>Platform</th>
+                        <th>Market</th>
+                        <th>Side</th>
+                        <th>Price</th>
+                        <th>Size</th>
+                        <th>Value</th>
+                        <th>Exec (ms)</th>
+                        <th>Spread</th>
+                    </tr>
+                </thead>
+                <tbody id="trades-body">
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 2rem; color: var(--text-tertiary);">
+                            Loading live trades...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Agent Configuration Section -->
+    <section id="agent" class="agent-section">
+        <div class="agent-container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    My Trading Agent
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding: 0.5rem 1rem; background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: var(--success);">
+                        <span style="width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success);"></span>
+                        MAINNET LIVE
+                    </span>
+                </h2>
+                <p class="section-subtitle">
+                    Configure your autonomous agent to trade across Polymarket, Kalshi, and Limitless using our unified infrastructure
+                </p>
+            </div>
+            
+            <!-- Agent Status -->
+            <div class="agent-status">
+                <div class="agent-status-icon inactive" id="agent-status-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                        <circle cx="9" cy="11" r="1"></circle>
+                        <circle cx="15" cy="11" r="1"></circle>
+                        <path d="M9 15h6"></path>
+                    </svg>
+                </div>
+                <div class="agent-status-info">
+                    <h4 id="agent-status-text">Agent Inactive</h4>
+                    <p id="agent-status-description">Complete setup below, then toggle this switch to activate</p>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="agent-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="agent-grid">
+                <!-- Configuration Panel -->
+                <div class="config-panel">
+                    <h3 class="panel-header">Setup Your Agent</h3>
+
+                    <div class="info-box" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); margin-bottom: 1.5rem;">
+                        <div class="info-box-title" style="color: var(--success);">
+                            🟢 Live Trading Enabled (Mainnet)
+                        </div>
+                        <div class="info-box-content" style="line-height: 1.6;">
+                            <strong>Real money trading is now active.</strong> The agent will execute real orders on Polygon mainnet, Kalshi, and other platforms using your provided credentials. Always monitor your positions and start with small amounts.
+                        </div>
+                    </div>
+                    
+                    <div class="info-box" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); margin-bottom: 1.5rem;">
+                        <div class="info-box-title" style="color: var(--danger);">
+                            ⚠️ Important Security Reminders
+                        </div>
+                        <div class="info-box-content" style="line-height: 1.6;">
+                            • Start with <strong>small position sizes</strong> to test execution<br>
+                            • Monitor your wallet balance and open positions regularly<br>
+                            • Never share your private keys or API credentials<br>
+                            • Use a dedicated trading wallet with limited funds<br>
+                            • For demo mode, leave all credentials empty
+                        </div>
+                    </div>
+
+                    <div class="info-box" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%); border-color: rgba(59, 130, 246, 0.3);">
+                        <div class="info-box-title" style="color: var(--accent-primary);">
+                            🚀 Quick Start Guide
+                        </div>
+                        <div class="info-box-content" style="line-height: 1.8;">
+                            <strong>Follow these 3 steps to start your autonomous trading agent:</strong><br>
+                            1️⃣ Connect your wallet<br>
+                            2️⃣ Choose platforms and configure strategy<br>
+                            3️⃣ Toggle the switch at the top to activate
+                        </div>
+                    </div>
+
+                    <form id="agent-config-form">
+                        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--accent-primary); margin-bottom: 1.5rem;">
+                            <div style="font-weight: 600; color: var(--accent-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="background: var(--accent-primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem;">1</span>
+                                Connect Your Wallet
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-left: 2rem;">
+                                Connect your Web3 wallet to enable cross-platform trading
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Wallet Address</label>
+                            <div class="api-key-input" style="position: relative;">
+                                <input type="text" id="agent-wallet" class="form-input" 
+                                       placeholder="0x... (Polygon, Ethereum, or Arbitrum)" 
+                                       onchange="updateWalletButtons()" 
+                                       oninput="updateWalletButtons()">
+                                <div style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); display: flex; gap: 0.5rem;">
+                                    <button type="button" id="change-wallet-btn" class="btn-secondary" onclick="changeWallet()" style="padding: 0.5rem 0.75rem; font-size: 0.85rem; display: none;">
+                                        Change
+                                    </button>
+                                    <button type="button" id="connect-wallet-btn" class="btn-secondary" onclick="connectWallet()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                                        Connect
+                                    </button>
+                                </div>
+                            </div>
+                            <small style="color: var(--text-tertiary); font-size: 0.8rem; margin-top: 0.5rem; display: block;">
+                                Connect via MetaMask or paste your wallet address • <span id="wallet-status" style="color: var(--accent-primary);">Not connected</span>
+                            </small>
+                        </div>
+
+                        <div class="info-box" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); margin-bottom: 1.5rem;">
+                            <div class="info-box-title" style="color: var(--accent-primary);">
+                                🔐 Live Trading Credentials (Mainnet)
+                            </div>
+                            <div class="info-box-content" style="line-height: 1.6; font-size: 0.875rem;">
+                                <strong>Demo mode:</strong> Leave empty for simulated trades (safe testing)<br>
+                                <strong>Live mode:</strong> Add credentials below for real trading on <span style="color: var(--success); font-weight: 600;">Polygon Mainnet</span>, Kalshi, and Limitless
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Polygon Private Key <span style="color: var(--success); font-weight: 600;">(Mainnet)</span></label>
+                            <div class="api-key-input">
+                                <input type="password" id="agent-private-key" class="form-input" 
+                                       placeholder="0x... (leave empty for demo mode)"
+                                       style="border-color: rgba(16, 185, 129, 0.3);">
+                                <button type="button" class="toggle-visibility" onclick="togglePasswordVisibility('agent-private-key')">
+                                    👁️
+                                </button>
+                            </div>
+                            <small style="color: var(--success); font-size: 0.8rem; margin-top: 0.5rem; display: block;">
+                                ✅ Mainnet Ready: Used for signing real transactions on Polygon • Polymarket & Limitless
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Kalshi API Key <span style="color: var(--text-tertiary); font-weight: 400;">(Optional)</span></label>
+                            <div class="api-key-input">
+                                <input type="password" id="agent-kalshi-key" class="form-input" 
+                                       placeholder="Leave empty for demo mode">
+                                <button type="button" class="toggle-visibility" onclick="togglePasswordVisibility('agent-kalshi-key')">
+                                    👁️
+                                </button>
+                            </div>
+                            <small style="color: var(--text-tertiary); font-size: 0.8rem; margin-top: 0.5rem; display: block;">
+                                Get from <a href="https://kalshi.com" target="_blank" style="color: var(--accent-primary);">kalshi.com</a> settings
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Kalshi API Secret <span style="color: var(--text-tertiary); font-weight: 400;">(Optional)</span></label>
+                            <div class="api-key-input">
+                                <input type="password" id="agent-kalshi-secret" class="form-input" 
+                                       placeholder="Leave empty for demo mode">
+                                <button type="button" class="toggle-visibility" onclick="togglePasswordVisibility('agent-kalshi-secret')">
+                                    👁️
+                                </button>
+                            </div>
+                            <small style="color: var(--text-tertiary); font-size: 0.8rem; margin-top: 0.5rem; display: block;">
+                                Required with API key for Kalshi trading
+                            </small>
+                        </div>
+
+                        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; border-left: 3px solid var(--accent-primary); margin-bottom: 1.5rem;">
+                            <div style="font-weight: 600; color: var(--accent-primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span style="background: var(--accent-primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem;">2</span>
+                                Configure Trading Platforms & Strategy
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-left: 2rem;">
+                                Select platforms and set your trading parameters
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Enabled Platforms</label>
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <label style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="platform-polymarket" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; margin-bottom: 0.25rem;">Polymarket</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-tertiary);">Polygon Network • Largest liquidity</div>
+                                    </div>
+                                    <span class="platform-badge platform-polymarket">Active</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="platform-kalshi" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; margin-bottom: 0.25rem;">Kalshi</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-tertiary);">USD Trading • CFTC Regulated</div>
+                                    </div>
+                                    <span class="platform-badge platform-polymarket">Active</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="platform-limitless" checked style="width: 18px; height: 18px; cursor: pointer;">
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; margin-bottom: 0.25rem;">Limitless</div>
+                                        <div style="font-size: 0.8rem; color: var(--text-tertiary);">Multi-chain DeFi • Cross-platform arbitrage</div>
+                                    </div>
+                                    <span class="platform-badge platform-polymarket">Active</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <h4 style="margin: 2rem 0 1rem; font-size: 1.125rem;">Trading Strategy</h4>
+
+                        <div class="form-group">
+                            <label class="form-label">Strategy Type</label>
+                            <select id="agent-strategy" class="form-select">
+                                <option value="arbitrage">Arbitrage Detection</option>
+                                <option value="momentum">Momentum Trading</option>
+                                <option value="mean-reversion">Mean Reversion</option>
+                                <option value="custom">Custom Rules</option>
+                            </select>
+                        </div>
+
+                        <div class="strategy-grid">
+                            <div class="form-group">
+                                <label class="form-label">Max Position Size</label>
+                                <input type="number" id="agent-max-position" class="form-input" 
+                                       placeholder="100" value="100" step="10" min="10">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Min Profit (%)</label>
+                                <input type="number" id="agent-min-profit" class="form-input" 
+                                       placeholder="2.0" value="2.0" step="0.1" min="0.1">
+                            </div>
+                        </div>
+
+                        <div class="strategy-grid">
+                            <div class="form-group">
+                                <label class="form-label">Max Daily Trades</label>
+                                <input type="number" id="agent-max-trades" class="form-input" 
+                                       placeholder="50" value="50" step="5" min="1">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Stop Loss (%)</label>
+                                <input type="number" id="agent-stop-loss" class="form-input" 
+                                       placeholder="5.0" value="5.0" step="0.5" min="0">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn" style="font-size: 1.05rem; padding: 1.125rem;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 0.5rem;">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            Save Configuration
+                        </button>
+                    </form>
+
+                    <div id="config-status" class="status-message" style="margin-top: 1rem;"></div>
+
+                    <div id="activation-reminder" style="display: none; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); border-radius: 8px; padding: 1.25rem; margin-top: 1.5rem;">
+                        <div style="font-weight: 600; color: var(--success); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="background: var(--success); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem;">3</span>
+                            Ready to Start!
+                        </div>
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-left: 2rem; line-height: 1.6;">
+                            Your agent is configured. <strong>Toggle the switch at the top</strong> to activate your autonomous trading agent. It will start monitoring markets and executing trades 24/7.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Panel -->
+                <div class="config-panel">
+                    <h3 class="panel-header">Agent Activity</h3>
+
+                    <div class="metrics-grid" style="margin-bottom: 1.5rem;">
+                        <div class="metric-card">
+                            <div class="metric-value" id="agent-trades-count">0</div>
+                            <div class="metric-label">Trades Today</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-positive" id="agent-pnl">$0.00</div>
+                            <div class="metric-label">Today's P&L</div>
+                        </div>
+                    </div>
+
+                    <div class="activity-feed" id="agent-activity-feed">
+                        <div style="text-align: center; padding: 3rem 1rem; color: var(--text-tertiary);">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+                            <p>Agent activity will appear here once activated</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div style="max-width: 1200px; margin: 0 auto; padding: 3rem 2rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <h3 style="font-size: 1.25rem; margin-bottom: 1rem; color: var(--accent-primary);">OracleXBT</h3>
+                    <p style="color: var(--text-tertiary); line-height: 1.6; font-size: 0.9rem;">Autonomous AI-powered trading agent for prediction markets. Trade smarter with advanced arbitrage detection and 24/7 monitoring.</p>
+                </div>
+                <div>
+                    <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-secondary);">Platform</h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="#features" style="color: var(--text-tertiary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-tertiary)'">Features</a>
+                        <a href="#markets" style="color: var(--text-tertiary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-tertiary)'">Live Markets</a>
+                        <a href="#agent" style="color: var(--text-tertiary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-tertiary)'">Setup Agent</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-secondary);">Resources</h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="https://github.com/OXBTAGENT/oraclexbt" target="_blank" style="color: var(--text-tertiary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-tertiary)'">GitHub</a>
+                        <a href="https://github.com/OXBTAGENT/oraclexbt/blob/main/docs/TRADING_SYSTEM.md" target="_blank" style="color: var(--text-tertiary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-tertiary)'">Documentation</a>
+                        <a href="https://github.com/OXBTAGENT/oraclexbt/blob/main/MAINNET_DEPLOYMENT.md" target="_blank" style="color: var(--text-tertiary); text-decoration: none; font-size: 0.9rem; transition: color 0.3s;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-tertiary)'">Mainnet Guide</a>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-secondary);">Community</h4>
+                    <div style="display: flex; gap: 1rem;">
+                        <a href="https://twitter.com/OXBTAGENT" target="_blank" style="color: var(--text-tertiary); transition: color 0.3s;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-tertiary)'" title="Twitter">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                        </a>
+                        <a href="https://github.com/OXBTAGENT/oraclexbt" target="_blank" style="color: var(--text-tertiary); transition: color 0.3s;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-tertiary)'" title="GitHub">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div style="border-top: 1px solid var(--border-color); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <p style="color: var(--text-tertiary); font-size: 0.875rem;">&copy; 2026 OracleXBT. Open-source autonomous trading agent.</p>
+                <div style="display: flex; gap: 1rem; font-size: 0.875rem;">
+                    <span style="color: var(--text-tertiary);">Mainnet:</span>
+                    <span style="color: var(--success); font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <span style="width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite;"></span>
+                        Live
+                    </span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" style="position: fixed; bottom: 2rem; right: 2rem; width: 48px; height: 48px; border-radius: 50%; background: var(--accent-primary); border: none; color: white; cursor: pointer; display: none; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); transition: all 0.3s; z-index: 1000;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 6px 20px rgba(59, 130, 246, 0.6)'" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.4)'" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+    </button>
+
+    <script>
+        console.log('[INIT] Script starting...');
+        
+        // Back to top button
+        window.addEventListener('scroll', function() {
+            const backToTop = document.getElementById('back-to-top');
+            if (window.scrollY > 500) {
+                backToTop.style.display = 'flex';
+            } else {
+                backToTop.style.display = 'none';
+            }
+        });
+        
+        // Performance tracking
+        let sessionStartTime = Date.now();
+        let previousTradeIds = new Set();
+        let lastUpdateTime = Date.now();
+
+        // Update timer display
+        function updateTimer() {
+            const secondsAgo = Math.floor((Date.now() - lastUpdateTime) / 1000);
+            const timerEl = document.getElementById('update-timer');
+            if (!timerEl) return;
+            if (secondsAgo < 5) {
+                timerEl.textContent = 'Updated just now';
+                timerEl.style.color = 'var(--success)';
+            } else {
+                timerEl.textContent = `Updated ${secondsAgo}s ago`;
+                timerEl.style.color = 'var(--text-tertiary)';
+            }
+        }
+
+        // Update timer every second
+        setInterval(updateTimer, 1000);
+
+        // Fetch and display live trades
+        async function fetchLiveTrades() {
+            console.log('fetchLiveTrades called at', new Date().toISOString());
+            try {
+                const response = await fetch('http://localhost:5001/api/trades');
+                console.log('Response received:', response.status);
+                const data = await response.json();
+                console.log('Data parsed, trades count:', data.trades.length);
+                
+                lastUpdateTime = Date.now();
+                updateTimer();
+                
+                // Update hero stats
+                document.getElementById('total-trades-hero').textContent = data.stats.total_trades;
+                document.getElementById('total-volume-hero').textContent = `$${(data.stats.total_volume / 1000).toFixed(1)}K`;
+                
+                // Update trades table
+                const tbody = document.getElementById('trades-body');
+                console.log('tbody element found:', !!tbody);
+                const newTradeIds = new Set(data.trades.map(t => t.id));
+                
+                const rows = data.trades.slice(0, 30).map((trade, index) => {
+                    const time = new Date(trade.timestamp).toLocaleTimeString('en-US', {
+                        hour12: false,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    
+                    const orderId = `${trade.platform.substring(0,3).toUpperCase()}-${trade.id.toString().padStart(6, '0')}`;
+                    const execTime = (Math.random() * 150 + 50).toFixed(0);
+                    const spread = (Math.random() * 4.5 + 0.5).toFixed(2);
+                    const sideClass = trade.side === 'YES' ? 'trade-side-yes' : 'trade-side-no';
+                    
+                    // Check if this is a new bet
+                    const isNewBet = !previousTradeIds.has(trade.id);
+                    const rowClass = isNewBet ? 'new-bet-row' : '';
+                    
+                    return `
+                        <tr class="${rowClass}">
+                            <td style="color: var(--text-tertiary);">${time}</td>
+                            <td style="color: var(--accent-primary); font-size: 0.85em; font-family: 'Courier New', monospace;">${orderId}</td>
+                            <td><span class="platform-badge platform-polymarket">${trade.platform}</span></td>
+                            <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${trade.market}</td>
+                            <td><span class="${sideClass}">${trade.side}</span></td>
+                            <td style="font-family: 'Courier New', monospace;">$${trade.price.toFixed(3)}</td>
+                            <td style="font-family: 'Courier New', monospace;">${trade.size}</td>
+                            <td style="color: var(--accent-primary); font-weight: 600;">$${trade.value.toFixed(2)}</td>
+                            <td style="color: var(--warning);">${execTime}</td>
+                            <td style="color: var(--accent-secondary);">${spread}%</td>
+                        </tr>
+                    `;
+                });
+                
+                tbody.innerHTML = rows.join('');
+                previousTradeIds = newTradeIds;
+                console.log('Trades table updated successfully');
+                
+            } catch (error) {
+                console.error('Error fetching trades:', error);
+                document.getElementById('trades-body').innerHTML = `
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 2rem; color: var(--danger);">
+                            Unable to connect to trading server
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Initialize trades feed
+        function initializeTrades() {
+            console.log('[TRADES] Initializing trades feed...');
+            fetchLiveTrades();
+            setInterval(fetchLiveTrades, 3000);
+        }
+        
+        // Start when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeTrades);
+        } else {
+            setTimeout(initializeTrades, 100);
+        }
+
+        // Agent Configuration Functions
+        let agentConfig = JSON.parse(localStorage.getItem('agentConfig') || '{}');
+        let agentActive = localStorage.getItem('agentActive') === 'true';
+        let agentInterval = null;
+
+        // Load saved configuration on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            if (agentConfig.wallet) {
+                document.getElementById('agent-wallet').value = agentConfig.wallet;
+                if (agentConfig.platforms) {
+                    document.getElementById('platform-polymarket').checked = agentConfig.platforms.polymarket;
+                    document.getElementById('platform-kalshi').checked = agentConfig.platforms.kalshi;
+                    document.getElementById('platform-limitless').checked = agentConfig.platforms.limitless;
+                }
+                document.getElementById('agent-strategy').value = agentConfig.strategy || 'arbitrage';
+                document.getElementById('agent-max-position').value = agentConfig.maxPosition || 100;
+                document.getElementById('agent-min-profit').value = agentConfig.minProfit || 2.0;
+                document.getElementById('agent-max-trades').value = agentConfig.maxTrades || 50;
+                document.getElementById('agent-stop-loss').value = agentConfig.stopLoss || 5.0;
+                
+                // Show activation reminder if configured but not active
+                if (!agentActive) {
+                    document.getElementById('activation-reminder').style.display = 'block';
+                }
+            }
+
+            document.getElementById('agent-toggle').checked = agentActive;
+            if (agentActive) {
+                startAgent();
+            }
+        });
+
+        // Wallet connection
+        async function connectWallet() {
+            if (typeof window.ethereum !== 'undefined') {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const walletInput = document.getElementById('agent-wallet');
+                    walletInput.value = accounts[0];
+                    updateWalletButtons();
+                    showConfigStatus('success', `Wallet connected: ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`);
+                } catch (error) {
+                    showConfigStatus('error', 'Failed to connect wallet: ' + error.message);
+                }
+            } else {
+                showConfigStatus('error', 'MetaMask not found. You can manually paste your wallet address.');
+            }
+        }
+
+        // Change/clear wallet
+        function changeWallet() {
+            if (confirm('Clear current wallet and enter a new one?')) {
+                const walletInput = document.getElementById('agent-wallet');
+                walletInput.value = '';
+                walletInput.focus();
+                updateWalletButtons();
+                showConfigStatus('info', 'Wallet cleared. Connect MetaMask or paste a new address.');
+            }
+        }
+
+        // Update wallet button states
+        function updateWalletButtons() {
+            const walletInput = document.getElementById('agent-wallet');
+            const connectBtn = document.getElementById('connect-wallet-btn');
+            const changeBtn = document.getElementById('change-wallet-btn');
+            const statusSpan = document.getElementById('wallet-status');
+            
+            if (!connectBtn || !changeBtn || !statusSpan) return;
+            
+            const hasWallet = walletInput.value && walletInput.value.trim().startsWith('0x') && walletInput.value.length >= 42;
+            
+            if (hasWallet) {
+                connectBtn.style.display = 'none';
+                changeBtn.style.display = 'block';
+                const addr = walletInput.value.trim();
+                statusSpan.textContent = `Connected: ${addr.substring(0, 6)}...${addr.substring(38)}`;
+                statusSpan.style.color = 'var(--success)';
+            } else {
+                connectBtn.style.display = 'block';
+                changeBtn.style.display = 'none';
+                statusSpan.textContent = 'Not connected';
+                statusSpan.style.color = 'var(--text-tertiary)';
+            }
+        }
+
+        // Initialize wallet buttons on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateWalletButtons();
+        });
+
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Save agent configuration
+        document.getElementById('agent-config-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const wallet = document.getElementById('agent-wallet').value;
+
+            if (!wallet || !wallet.startsWith('0x')) {
+                showConfigStatus('error', 'Please connect a valid wallet address');
+                return;
+            }
+
+            const enabledPlatforms = {
+                polymarket: document.getElementById('platform-polymarket').checked,
+                kalshi: document.getElementById('platform-kalshi').checked,
+                limitless: document.getElementById('platform-limitless').checked
+            };
+
+            const platformCount = Object.values(enabledPlatforms).filter(v => v).length;
+            if (platformCount === 0) {
+                showConfigStatus('error', 'Please enable at least one trading platform');
+                return;
+            }
+
+            // Get credentials (optional for live trading)
+            const privateKey = document.getElementById('agent-private-key').value.trim();
+            const kalshiApiKey = document.getElementById('agent-kalshi-key').value.trim();
+            const kalshiApiSecret = document.getElementById('agent-kalshi-secret').value.trim();
+
+            const config = {
+                wallet: wallet,
+                platforms: enabledPlatforms,
+                strategy: document.getElementById('agent-strategy').value,
+                maxPosition: parseFloat(document.getElementById('agent-max-position').value),
+                minProfit: parseFloat(document.getElementById('agent-min-profit').value),
+                maxTrades: parseInt(document.getElementById('agent-max-trades').value),
+                stopLoss: parseFloat(document.getElementById('agent-stop-loss').value),
+                savedAt: new Date().toISOString()
+            };
+
+            // Add credentials if provided (for live trading)
+            if (privateKey) {
+                config.privateKey = privateKey;
+            }
+            if (kalshiApiKey) {
+                config.kalshiApiKey = kalshiApiKey;
+            }
+            if (kalshiApiSecret) {
+                config.kalshiApiSecret = kalshiApiSecret;
+            }
+
+            // Register agent with backend
+            try {
+                showConfigStatus('pending', 'Registering agent with trading engine...');
+                
+                const response = await fetch('http://localhost:5001/api/agent/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    config.agent_id = result.agent_id;
+                    agentConfig = config;
+                    localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
+                    
+                    showConfigStatus('success', `Agent registered successfully! You can now activate your agent.`);
+                    
+                    // Show the activation reminder
+                    document.getElementById('activation-reminder').style.display = 'block';
+                    
+                    // Scroll to toggle if needed
+                    setTimeout(() => {
+                        document.getElementById('agent-status-icon').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 1500);
+                } else {
+                    showConfigStatus('error', 'Registration failed: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Agent registration error:', error);
+                showConfigStatus('error', 'Failed to connect to trading engine');
+            }
+        });
+
+        function showConfigStatus(type, message) {
+            const statusDiv = document.getElementById('config-status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Agent toggle
+        document.getElementById('agent-toggle').addEventListener('change', async function() {
+            if (this.checked) {
+                if (!agentConfig.wallet || !agentConfig.platforms || !agentConfig.agent_id) {
+                    this.checked = false;
+                    showConfigStatus('error', 'Please configure your agent first');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('http://localhost:5001/api/agent/activate', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ agent_id: agentConfig.agent_id })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        agentActive = true;
+                        localStorage.setItem('agentActive', 'true');
+                        startAgent();
+                        
+                        // Start polling for real agent activity
+                        startAgentActivityPolling();
+                    } else {
+                        this.checked = false;
+                        showConfigStatus('error', 'Activation failed: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Agent activation error:', error);
+                    this.checked = false;
+                    showConfigStatus('error', 'Failed to activate agent');
+                }
+            } else {
+                try {
+                    const response = await fetch('http://localhost:5001/api/agent/deactivate', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ agent_id: agentConfig.agent_id })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        agentActive = false;
+                        localStorage.setItem('agentActive', 'false');
+                        stopAgent();
+                        
+                        // Stop polling
+                        if (agentPollingInterval) {
+                            clearInterval(agentPollingInterval);
+                            agentPollingInterval = null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Agent deactivation error:', error);
+                }
+            }
+        });
+
+        function startAgent() {
+            const statusIcon = document.getElementById('agent-status-icon');
+            const statusText = document.getElementById('agent-status-text');
+            const statusDescription = document.getElementById('agent-status-description');
+
+            const enabledPlatforms = [];
+            if (agentConfig.platforms.polymarket) enabledPlatforms.push('Polymarket');
+            if (agentConfig.platforms.kalshi) enabledPlatforms.push('Kalshi');
+            if (agentConfig.platforms.limitless) enabledPlatforms.push('Limitless');
+
+            statusIcon.classList.remove('inactive');
+            statusIcon.classList.add('active');
+            statusText.textContent = 'Agent Active';
+            statusDescription.textContent = `Trading on ${enabledPlatforms.join(', ')} with ${agentConfig.strategy} strategy`;
+
+            // Hide activation reminder when agent is started
+            document.getElementById('activation-reminder').style.display = 'none';
+
+            // Add initial activity
+            addActivity('info', 'Agent activated', `Started monitoring markets on ${enabledPlatforms.join(', ')}`);
+        }
+
+        let agentPollingInterval = null;
+
+        function startAgentActivityPolling() {
+            // Poll agent status every 10 seconds
+            agentPollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`http://localhost:5001/api/agent/status/${agentConfig.agent_id}`);
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Update metrics
+                        document.getElementById('agent-trades-count').textContent = result.stats.today_trades;
+                        
+                        const pnlElement = document.getElementById('agent-pnl');
+                        const netProfit = result.stats.net_profit || 0;
+                        pnlElement.textContent = `${netProfit >= 0 ? '+' : ''}$${netProfit.toFixed(2)}`;
+                        pnlElement.className = netProfit >= 0 ? 'metric-value metric-positive' : 'metric-value metric-negative';
+                        
+                        // Display recent positions as activities
+                        if (result.recent_positions && result.recent_positions.length > 0) {
+                            const lastPosition = result.recent_positions[result.recent_positions.length - 1];
+                            if (lastPosition.success) {
+                                const profit = lastPosition.expected_profit || 0;
+                                const detail = `${lastPosition.type} trade on ${lastPosition.market}: $${profit.toFixed(2)} profit (${lastPosition.spread}% spread)`;
+                                addActivity('trade', 'Trade Executed', detail);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Agent polling error:', error);
+                }
+            }, 10000);
+        }
+
+        function stopAgent() {
+            const statusIcon = document.getElementById('agent-status-icon');
+            const statusText = document.getElementById('agent-status-text');
+            const statusDescription = document.getElementById('agent-status-description');
+
+            statusIcon.classList.remove('active');
+            statusIcon.classList.add('inactive');
+            statusText.textContent = 'Agent Inactive';
+            statusDescription.textContent = 'Complete setup below, then toggle this switch to activate';
+
+            if (agentInterval) {
+                clearInterval(agentInterval);
+                agentInterval = null;
+            }
+
+            // Show activation reminder again
+            if (agentConfig.wallet) {
+                document.getElementById('activation-reminder').style.display = 'block';
+            }
+
+            addActivity('info', 'Agent deactivated', 'Stopped all trading operations');
+        }
+
+        function simulateAgentActivity() {
+            const activities = [
+                { type: 'trade', title: 'Trade Executed', detail: 'Bought YES at $0.35 on arbitrage opportunity' },
+                { type: 'alert', title: 'Opportunity Detected', detail: 'Price spread of 3.2% detected across platforms' },
+                { type: 'trade', title: 'Trade Executed', detail: 'Sold NO at $0.68 for 2.4% profit' },
+                { type: 'alert', title: 'Market Scanned', detail: 'Analyzed 30 markets, 2 opportunities found' },
+                { type: 'trade', title: 'Position Closed', detail: 'Closed position with $12.50 profit' }
+            ];
+
+            const activity = activities[Math.floor(Math.random() * activities.length)];
+            addActivity(activity.type, activity.title, activity.detail);
+
+            // Update metrics
+            const currentTrades = parseInt(document.getElementById('agent-trades-count').textContent);
+            const currentPnL = parseFloat(document.getElementById('agent-pnl').textContent.replace(/[$,]/g, ''));
+            
+            if (activity.type === 'trade') {
+                document.getElementById('agent-trades-count').textContent = currentTrades + 1;
+                
+                const profit = Math.random() > 0.6 ? (Math.random() * 20 + 5) : -(Math.random() * 10 + 2);
+                const newPnL = currentPnL + profit;
+                
+                const pnlElement = document.getElementById('agent-pnl');
+                pnlElement.textContent = `${newPnL >= 0 ? '+' : ''}$${newPnL.toFixed(2)}`;
+                pnlElement.className = newPnL >= 0 ? 'metric-value metric-positive' : 'metric-value metric-negative';
+            }
+        }
+
+        function addActivity(type, title, detail) {
+            const feed = document.getElementById('agent-activity-feed');
+            
+            // Remove placeholder if exists
+            if (feed.querySelector('div[style*="text-align: center"]')) {
+                feed.innerHTML = '';
+            }
+
+            const timeString = new Date().toLocaleTimeString('en-US', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const activityHtml = `
+                <div class="activity-item">
+                    <div class="activity-header">
+                        <span class="activity-type ${type}">${title}</span>
+                        <span class="activity-time">${timeString}</span>
+                    </div>
+                    <div class="activity-details">${detail}</div>
+                </div>
+            `;
+
+            feed.insertAdjacentHTML('afterbegin', activityHtml);
+
+            // Keep only last 20 activities
+            const items = feed.querySelectorAll('.activity-item');
+            if (items.length > 20) {
+                items[items.length - 1].remove();
+            }
+        }
+    </script>
+</body>
+</html>

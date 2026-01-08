@@ -1,12 +1,14 @@
 # Environment
 .env
+.venv/
+venv/
 
 # Logs
 *.log
+*.out
+*.pid
 oracle_*.log
-
-# Website
-website/
+training_results_*.json
 
 # Temporary files
 *.pyc

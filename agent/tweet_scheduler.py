@@ -243,6 +243,10 @@ class HourlyTweetScheduler:
             try:
                 prompt = self._get_prompt_for_content_type(content_type)
                 
+                # Make instructions stricter on retries
+                if attempt > 0:
+                    prompt += "\n\nCRITICAL: Your previous response was too long. You MUST keep this strictly under 280 characters or it cannot be posted."
+                
                 logger.info(f"Generating {content_type.value} tweet (attempt {attempt + 1})")
                 
                 response = self.agent.chat(prompt)
@@ -255,9 +259,10 @@ class HourlyTweetScheduler:
                 # Clean response (remove quotes if present)
                 tweet_text = response.strip().strip('"\'')
                 
-                # Ensure it fits in 280 characters
+                # Strict length check - retry if too long instead of truncating
                 if len(tweet_text) > 280:
-                    tweet_text = tweet_text[:277] + "..."
+                    logger.warning(f"Generated tweet too long ({len(tweet_text)} chars), retrying...")
+                    continue
                 
                 logger.info(f"Successfully generated {content_type.value} tweet")
                 self.tweets_posted += 1
@@ -287,13 +292,13 @@ class HourlyTweetScheduler:
                 return False
             
             # Post it using the agent's Twitter tools
-            if not self.agent.twitter_tools or not self.agent.twitter_tools.twitter_client.is_ready:
+            if not self.agent.twitter_tools or not self.agent.twitter_tools.is_available:
                 logger.error("Twitter client not available")
                 return False
             
             result = self.agent.twitter_tools.post_tweet(tweet_text)
             
-            if result.get("success"):
+            if result.get("posted") or result.get("success"):
                 logger.info(f"✓ Posted hourly tweet: {tweet_text[:80]}...")
                 return True
             else:
