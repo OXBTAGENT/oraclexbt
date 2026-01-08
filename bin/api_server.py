@@ -20,7 +20,7 @@ from trading_engine import trading_engine, AgentConfig
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from database import Database
+from core.database import Database
 
 # Get the parent directory (project root)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

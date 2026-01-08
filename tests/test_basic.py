@@ -10,8 +10,8 @@ import os
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from database import Database
-from config_loader import Config
+from core.database import Database
+from core.config_loader import Config
 
 class TestDatabase:
     """Test database operations"""
@@ -129,7 +129,7 @@ class TestFeeCalculation:
     
     def test_fee_rate(self):
         """Test fee rate is 1%"""
-        from config_loader import config
+        from core.config_loader import config
         fee_rate = config.get('trading.platform_fee_rate')
         assert fee_rate == 0.01
     

@@ -5,7 +5,7 @@ Enhanced logging setup for OracleXBT
 import logging
 import logging.handlers
 from pathlib import Path
-from config_loader import config
+from core.config_loader import config
 
 def setup_logging():
     """Configure logging for the application"""
