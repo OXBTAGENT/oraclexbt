@@ -28,3 +28,6 @@ training_results_*.json
 
 # Dependency files starting with =
 =*
+
+# Website
+website/
