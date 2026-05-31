@@ -31,3 +31,10 @@ training_results_*.json
 
 # Website
 website/
+
+# VeilPiercer additions
+wallet.json
+keypair.json
+*.key
+*.pem
+*.p12
